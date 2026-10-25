@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perencana Proyek Servis — Alat Perencanaan Proyek</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">🗂️</span>
+    <div>
+      <strong>Perencana Proyek Servis</strong>
+      <span class="sub" id="judulProyek">Belum ada proyek</span>
+    </div>
+  </div>
+  <div class="aksi">
+    <button type="button" class="btn" id="btnContohA">Muat contoh: Servis 40 Laptop</button>
+    <button type="button" class="btn" id="btnContohB">Muat contoh: Jalur Kritis</button>
+    <button type="button" class="btn" id="btnEkspor">Ekspor JSON</button>
+    <label class="btn label-btn" for="inpImpor">Impor JSON</label>
+    <input type="file" id="inpImpor" accept="application/json,.json" hidden>
+    <button type="button" class="btn btn-bahaya" id="btnReset">Bersihkan data</button>
+    <span class="status-simpan" id="statusSimpan"></span>
+  </div>
+</header>
+
+<nav class="tab-bar" id="tabBar">
+  <button type="button" class="tab-btn aktif" data-tab="pengaturan">1. Pengaturan proyek</button>
+  <button type="button" class="tab-btn" data-tab="kegiatan">2. Daftar kegiatan</button>
+  <button type="button" class="tab-btn" data-tab="tim">3. Tim</button>
+  <button type="button" class="tab-btn" data-tab="visual">4. Visualisasi</button>
+  <button type="button" class="tab-btn" data-tab="jalur">5. Jalur kritis</button>
+</nav>
+
+<main>
+
+  <!-- ============ 1. PENGATURAN PROYEK ============ -->
+  <section class="tab-isi aktif" id="tab-pengaturan">
+    <div class="kartu">
+      <h2>Pengaturan proyek</h2>
+      <p class="petunjuk">Data disimpan otomatis di <code>localStorage</code> browser Anda.</p>
+
+      <div class="grid-dua">
+        <label class="field">
+          <span>Nama proyek</span>
+          <input type="text" id="setNama" placeholder="Contoh: Servis Massal 40 Laptop Lab">
+        </label>
+        <label class="field">
+          <span>Nama tempat servis / organisasi</span>
+          <input type="text" id="setOrganisasi" placeholder="Contoh: Laboratorium Komputer Kampus">
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Deskripsi proyek</span>
+        <textarea id="setDeskripsi" rows="3" placeholder="Jelaskan cakupan proyek…"></textarea>
+      </label>
+
+      <div class="grid-dua">
+        <label class="field">
+          <span>Tanggal mulai proyek</span>
+          <input type="date" id="setMulai">
+        </label>
+        <div class="field">
+          <span>Sinkronisasi</span>
+          <button type="button" class="btn btn-utama" id="btnSimpanPengaturan">Simpan pengaturan</button>
+        </div>
+      </div>
+
+      <h3>Hari libur mingguan</h3>
+      <div class="hari-libur" id="liburMingguan">
+        <label><input type="checkbox" value="1"> Senin</label>
+        <label><input type="checkbox" value="2"> Selasa</label>
+        <label><input type="checkbox" value="3"> Rabu</label>
+        <label><input type="checkbox" value="4"> Kamis</label>
+        <label><input type="checkbox" value="5"> Jumat</label>
+        <label><input type="checkbox" value="6"> Sabtu</label>
+        <label><input type="checkbox" value="0"> Minggu</label>
+      </div>
+      <p class="petunjuk">Pengubahan centang langsung disimpan.</p>
+
+      <h3>Daftar libur khusus</h3>
+      <div class="grid-empat">
+        <label class="field">
+          <span>Nama libur</span>
+          <input type="text" id="liburNama" placeholder="Contoh: Hari libur nasional">
+        </label>
+        <label class="field">
+          <span>Tanggal</span>
+          <input type="date" id="liburTanggal">
+        </label>
+        <label class="field">
+          <span>Pola pengulangan</span>
+          <select id="liburPola">
+            <option value="sekali">Sekali (hanya tahun ini)</option>
+            <option value="tahunan">Berulang setiap tahun</option>
+            <option value="bulanan">Berulang setiap bulan</option>
+          </select>
+        </label>
+        <div class="field">
+          <span>&nbsp;</span>
+          <button type="button" class="btn" id="btnTambahLibur">Tambah libur</button>
+        </div>
+      </div>
+
+      <table class="tabel">
+        <thead>
+          <tr><th>Nama libur</th><th>Tanggal</th><th>Pola</th><th></th></tr>
+        </thead>
+        <tbody id="tabelLibur"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 2. DAFTAR KEGIATAN ============ -->
+  <section class="tab-isi" id="tab-kegiatan">
+    <div class="kartu">
+      <h2 id="judulFormKegiatan">Tambah kegiatan</h2>
+      <form id="formKegiatan">
+        <input type="hidden" id="kegId">
+        <div class="grid-empat">
+          <label class="field field-besar">
+            <span>Nama kegiatan</span>
+            <input type="text" id="kegNama" placeholder="Contoh: Pemeriksaan &amp; Diagnosis Awal" required>
+          </label>
+          <label class="field">
+            <span>Durasi (hari kerja)</span>
+            <input type="number" id="kegDurasi" min="1" step="1" value="1" required>
+          </label>
+          <label class="field">
+            <span>Warna</span>
+            <input type="color" id="kegWarna" value="#3b82f6">
+          </label>
+          <label class="field">
+            <span>Sub-kegiatan dari (induk)</span>
+            <select id="kegInduk"><option value="">— kegiatan utama —</option></select>
+          </label>
+        </div>
+
+        <h3>Hubungan / dependensi kegiatan</h3>
+        <div class="grid-empat">
+          <label class="field">
+            <span>Didahului oleh kegiatan</span>
+            <select id="depKegiatan"><option value="">— pilih kegiatan —</option></select>
+          </label>
+          <label class="field">
+            <span>Tipe hubungan</span>
+            <select id="depTipe">
+              <option value="FS">FS — Finish to Start (mulai setelah selesai)</option>
+              <option value="SS">SS — Start to Start (mulai bersamaan)</option>
+              <option value="FF">FF — Finish to Finish (selesai bersamaan)</option>
+              <option value="SF">SF — Start to Finish (selesai setelah mulai)</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Jeda (hari kerja)</span>
+            <input type="number" id="depJeda" min="0" step="1" value="0">
+          </label>
+          <div class="field">
+            <span>&nbsp;</span>
+            <button type="button" class="btn" id="btnTambahDep">Tambah hubungan</button>
+          </div>
+        </div>
+        <ul class="daftar-dep" id="daftarDep"></ul>
+
+        <div class="baris-aksi">
+          <button type="submit" class="btn btn-utama" id="btnSimpanKegiatan">Tambah kegiatan</button>
+          <button type="button" class="btn" id="btnBatalKegiatan" hidden>Batal ubah</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="kartu">
+      <h2>Daftar kegiatan</h2>
+      <p class="petunjuk" id="ringkasKegiatan"></p>
+      <table class="tabel">
+        <thead>
+          <tr>
+            <th>Kegiatan</th><th class="kanan">Durasi</th><th>Warna</th>
+            <th>Didahului oleh</th><th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tabelKegiatan"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 3. TIM ============ -->
+  <section class="tab-isi" id="tab-tim">
+    <div class="kartu">
+      <h2 id="judulFormAnggota">Tambah anggota tim</h2>
+      <form id="formAnggota">
+        <input type="hidden" id="angId">
+        <div class="grid-empat">
+          <label class="field field-besar">
+            <span>Nama anggota</span>
+            <input type="text" id="angNama" placeholder="Contoh: Andi Pratama" required>
+          </label>
+          <label class="field">
+            <span>Peran</span>
+            <select id="angPeran"></select>
+          </label>
+          <label class="field">
+            <span>Kontak (HP/email)</span>
+            <input type="text" id="angKontak" placeholder="0812-xxxx-xxxx">
+          </label>
+          <label class="field">
+            <span>Libur pribadi (pisahkan dengan koma)</span>
+            <input type="text" id="angLibur" placeholder="2026-07-10, 2026-07-17">
+          </label>
+        </div>
+        <div class="baris-aksi">
+          <button type="submit" class="btn btn-utama" id="btnSimpanAnggota">Tambah anggota</button>
+          <button type="button" class="btn" id="btnBatalAnggota" hidden>Batal ubah</button>
+        </div>
+      </form>
+      <table class="tabel">
+        <thead>
+          <tr><th>Nama</th><th>Peran</th><th>Kontak</th><th>Libur pribadi</th><th>Aksi</th></tr>
+        </thead>
+        <tbody id="tabelAnggota"></tbody>
+      </table>
+    </div>
+
+    <div class="kartu">
+      <h2>Penugasan anggota ke kegiatan</h2>
+      <div class="grid-empat">
+        <label class="field">
+          <span>Kegiatan</span>
+          <select id="pasKegiatan"></select>
+        </label>
+        <label class="field">
+          <span>Anggota</span>
+          <select id="pasAnggota"></select>
+        </label>
+        <div class="field">
+          <span>&nbsp;</span>
+          <button type="button" class="btn" id="btnTambahPas">Tugaskan</button>
+        </div>
+        <div></div>
+      </div>
+      <table class="tabel">
+        <thead>
+          <tr><th>Kegiatan</th><th>Anggota</th><th>Peran</th><th>Kontak</th><th></th></tr>
+        </thead>
+        <tbody id="tabelPenugasan"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 4. VISUALISASI ============ -->
+  <section class="tab-isi" id="tab-visual">
+    <div class="kartu">
+      <div class="baris-atas">
+        <h2>Visualisasi</h2>
+        <div class="pilih-mode">
+          <button type="button" class="btn btn-utama" data-mode="gantt">Diagram Gantt</button>
+          <button type="button" class="btn" data-mode="pert">Diagram PERT</button>
+          <button type="button" class="btn" data-mode="jaringan">Diagram jaringan</button>
+        </div>
+      </div>
+      <p class="petunjuk" id="keteranganVisual"></p>
+      <div id="areaVisual"></div>
+    </div>
+  </section>
+
+  <!-- ============ 5. JALUR KRITIS ============ -->
+  <section class="tab-isi" id="tab-jalur">
+    <div class="kartu">
+      <h2>Jalur kritis &amp; estimasi lama proyek</h2>
+      <div class="kartu-ringkas" id="ringkasJalur"></div>
+      <table class="tabel">
+        <thead>
+          <tr>
+            <th class="kanan">No.</th>
+            <th>Jalur (kegiatan awal → akhir)</th>
+            <th class="kanan">Jumlah kegiatan</th>
+            <th class="kanan">Total durasi (hari kerja)</th>
+            <th class="kanan">Total jeda</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="tabelJalur"></tbody>
+      </table>
+      <p class="petunjuk" id="catatanJalur"></p>
+      <h3>Kegiatan pada jalur kritis (lonjakan total = 0)</h3>
+      <div id="daftarKritis"></div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="js/schedule.js"></script>
+<script src="js/samples.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

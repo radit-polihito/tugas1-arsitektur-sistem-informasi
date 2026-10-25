@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tes Otomatis — Perencana Proyek Servis</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">🧪</span>
+    <div>
+      <strong>Halaman Tes — Perencana Proyek Servis</strong>
+      <span class="sub">Pengecekan otomatis atas Contoh A (Servis Massal 40 Laptop Lab) dan Contoh B (Jalur Kritis)</span>
+    </div>
+  </div>
+  <div class="aksi">
+    <a class="btn" href="index.html">← Buka aplikasi</a>
+    <button type="button" class="btn" id="btnUlang">Jalankan ulang</button>
+  </div>
+</header>
+
+<main style="max-width:960px;">
+  <div class="kartu">
+    <div class="tes-bilah">
+      <h2>Hasil pengecekan otomatis</h2>
+      <span class="sub" id="waktuJalan"></span>
+    </div>
+
+    <div class="tes-ringkas" id="ringkasTes">Menjalankan tes…</div>
+
+    <h3>Contoh A — Servis Massal 40 Laptop Lab (30 Jun – 31 Jul, libur akhir pekan &amp; 17 Jul)</h3>
+    <ul class="tes-daftar" id="tesA"></ul>
+
+    <h3>Contoh B — Jalur kritis dengan banyak jalur paralel</h3>
+    <ul class="tes-daftar" id="tesB"></ul>
+
+    <p class="petunjuk">
+      Setiap baris menampilkan status LULUS/GAGAL dan nilai yang diperiksa.
+      Bila ada yang gagal, pesan kesalahan menjelaskan nilai yang diharapkan versus nilai yang didapat.
+    </p>
+  </div>
+</main>
+
+<script src="js/schedule.js"></script>
+<script src="js/samples.js"></script>
+<script src="js/tests.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  function baris(h) {
+    var li = document.createElement('li');
+    li.className = h.lulus ? 'lulus' : 'gagal';
+    var tanda = document.createElement('span');
+    tanda.className = 'tes-tanda';
+    tanda.textContent = h.lulus ? '✓ LULUS' : '✗ GAGAL';
+    var isi = document.createElement('div');
+    var judul = document.createElement('div');
+    judul.textContent = h.nama;
+    isi.appendChild(judul);
+    if (h.lulus && h.keterangan) {
+      var ket = document.createElement('span');
+      ket.className = 'tes-hasil';
+      ket.textContent = 'diperiksa: ' + h.keterangan;
+      isi.appendChild(ket);
+    }
+    if (!h.lulus) {
+      var pesan = document.createElement('span');
+      pesan.className = 'tes-pesan';
+      pesan.textContent = h.pesan;
+      isi.appendChild(pesan);
+    }
+    li.appendChild(tanda);
+    li.appendChild(isi);
+    return li;
+  }
+
+  function jalankan() {
+    var hasil;
+    try {
+      hasil = window.JalankanTes();
+    } catch (e) {
+      document.getElementById('ringkasTes').className = 'tes-ringkas gagal';
+      document.getElementById('ringkasTes').textContent = 'TES TIDAK BERJALAN: ' + e.message;
+      return;
+    }
+
+    var lulus = hasil.filter(function (h) { return h.lulus; });
+    var gagal = hasil.filter(function (h) { return !h.lulus; });
+    var ringkas = document.getElementById('ringkasTes');
+
+    if (gagal.length === 0) {
+      ringkas.className = 'tes-ringkas lulus';
+      ringkas.textContent = 'LULUS — ' + lulus.length + '/' + hasil.length + ' tes berhasil. Kedua contoh sesuai harapan.';
+    } else {
+      ringkas.className = 'tes-ringkas gagal';
+      ringkas.textContent = 'GAGAL — ' + gagal.length + ' dari ' + hasil.length + ' tes tidak lolos. Lihat pesan merah di bawah.';
+    }
+
+    var kataA = 'Contoh A';
+    var isiA = hasil.filter(function (h) { return h.nama.indexOf(kataA) === 0; });
+    var isiB = hasil.filter(function (h) { return h.nama.indexOf('Contoh B') === 0; });
+
+    var ulA = document.getElementById('tesA');
+    var ulB = document.getElementById('tesB');
+    ulA.innerHTML = '';
+    ulB.innerHTML = '';
+    isiA.forEach(function (h) { ulA.appendChild(baris(h)); });
+    isiB.forEach(function (h) { ulB.appendChild(baris(h)); });
+    if (!isiA.length) ulA.innerHTML = '<li class="gagal"><span class="tes-tanda">✗</span><div>Tidak ada tes Contoh A yang dijalankan.</div></li>';
+    if (!isiB.length) ulB.innerHTML = '<li class="gagal"><span class="tes-tanda">✗</span><div>Tidak ada tes Contoh B yang dijalankan.</div></li>';
+
+    document.getElementById('waktuJalan').textContent = 'Dijalankan pada ' + new Date().toLocaleString('id-ID');
+  }
+
+  document.getElementById('btnUlang').addEventListener('click', jalankan);
+  jalankan();
+})();
+</script>
+</body>
+</html>
