@@ -1,3 +1,5 @@
+<img width="1366" height="1380" alt="screencapture-file-E-tugas-arsi-pak-eko-index-html-2026-10-25-21_16_38" src="https://github.com/user-attachments/assets/45ac7db9-086d-47b9-b2f5-2a52e2b3b080" />
+<img width="1366" height="797" alt="screencapture-file-E-tugas-arsi-pak-eko-index-html-2026-10-25-21_16_09" src="https://github.com/user-attachments/assets/5bcfb4e5-167d-4c14-b07e-e8f184987fdf" />
 # Perencana Proyek Servis 🗂️
 
 Alat perencanaan proyek **berbasis web** untuk mahasiswa Sistem Informasi, dibangun
