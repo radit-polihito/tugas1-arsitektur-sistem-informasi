@@ -347,7 +347,10 @@
       if (selesaiProyek !== null && lf > selesaiProyek) lf = selesaiProyek;
       LF[id] = lf;
       LS[id] = kal.mundurKerja(lf, durasi - 1);
-      TF[id] = kal.selisihKerja(LS[id], jadwal[id].mulai);
+      // Lonjakan total = LS - ES (dihitung dalam hari kerja, bisa negatif bila LS < ES).
+      TF[id] = LS[id] >= jadwal[id].mulai
+        ? kal.selisihKerja(jadwal[id].mulai, LS[id])
+        : -kal.selisihKerja(LS[id], jadwal[id].mulai);
     });
 
     return { LF: LF, LS: LS, TF: TF, selesaiProyek: selesaiProyek };

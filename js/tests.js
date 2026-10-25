@@ -66,33 +66,45 @@
       });
     });
 
-    tes('Contoh A — tidak ada kegiatan yang jatuh pada hari libur 17 Juli 2026', function () {
+    /* Hari-hari kerja yang benar-benar dipakai satu kegiatan: mulai, lalu maju
+     * sebanyak durasi hari kerja (dengan demikian melewati akhir pekan & libur). */
+    function hariKerjaKegiatan(res, id) {
+      var j = res.jadwal[id];
+      var n = S.durasiKegiatan(res.peta[id]);
+      var hasil = [], t = j.mulai;
+      for (var i = 0; i < n; i++) {
+        hasil.push(t);
+        t = res.kal.majuKerja(t, 1);
+      }
+      return hasil;
+    }
+
+    tes('Contoh A — 17 Juli 2026 tidak dihitung sebagai hari kerja kegiatan mana pun', function () {
+      benar(resA.kal.libur('2026-07-17'), '17 Juli 2026 tidak terdaftar sebagai hari libur');
       var jatuh = [];
       Object.keys(resA.jadwal).forEach(function (id) {
-        var j = resA.jadwal[id];
-        var t = j.mulai;
-        while (t <= j.selesai) {
+        hariKerjaKegiatan(resA, id).forEach(function (t) {
           if (t === '2026-07-17') jatuh.push(resA.peta[id].nama);
-          t = S.tambahHari(t, 1);
-        }
+        });
       });
-      benar(jatuh.length === 0, 'kegiatan yang menempati 17 Juli: ' + jatuh.join(', '));
-      return 'tidak ada kegiatan pada 17/07/2026';
+      benar(jatuh.length === 0, 'kegiatan yang bekerja pada 17 Juli: ' + jatuh.join(', '));
+      return 'Perbaikan & Pembersihan Hardware melompati 17/07/2026';
     });
 
-    tes('Contoh A — tidak ada kegiatan yang jatuh pada akhir pekan', function () {
-      var akhirPekan = [];
+    tes('Contoh A — semua hari kerja kegiatan jatuh pada hari kerja, bukan akhir pekan', function () {
+      var salah = [];
       Object.keys(resA.jadwal).forEach(function (id) {
         var j = resA.jadwal[id];
-        var t = j.mulai;
-        while (t <= j.selesai) {
-          var hari = S.hariDalamMinggu(t);
-          if (hari === 0 || hari === 6) akhirPekan.push(resA.peta[id].nama + ' pada ' + t);
-          t = S.tambahHari(t, 1);
-        }
+        var hari = hariKerjaKegiatan(resA, id);
+        hari.forEach(function (t) {
+          if (!resA.kal.adalahHariKerja(t)) salah.push(resA.peta[id].nama + ' pada ' + t);
+        });
+        var n = S.durasiKegiatan(resA.peta[id]);
+        var hitung = resA.kal.jumlahHariKerja(j.mulai, j.selesai);
+        if (hitung !== n) salah.push(resA.peta[id].nama + ' punya ' + hitung + ' hari kerja, seharusnya ' + n);
       });
-      benar(akhirPekan.length === 0, 'menempati akhir pekan: ' + akhirPekan.join(', '));
-      return 'seluruh rentang kegiatan adalah hari kerja';
+      benar(salah.length === 0, 'pelanggaran hari libur: ' + salah.join('; '));
+      return 'batang Gantt boleh melewati akhir pekan, hari kerjanya tidak';
     });
 
     tes('Contoh A — jadwal melewati libur (Perbaikan & Pembersihan Hardware selesai setelah 17 Juli)', function () {
